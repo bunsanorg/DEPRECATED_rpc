@@ -48,7 +48,7 @@ Each RPC has Request and Response messages.
 
 ### Handles
 User defined messages can contain special handle objects
-defined in `bunsan.rpc.handle` package.
+defined in [`bunsan.rpc.handle`](../include/bunsan/rpc/handle.proto) package.
 Handle objects link data from different entry into message
 via special interface provided by RPC implementation.
 User can access this data via handle in a way most suitable for that.
@@ -112,6 +112,8 @@ Common EBNF
     entry header = base64 encoded bunsan.rpc.header.EntryHeader;
     separator = CRLF;
     data = raw data of specified size;
+
+See [`bunsan.rpc.header`](../include/bunsan/rpc/header.proto) for details.
 
 ### Transfer encoding
 Implementation is allowed to use any wide-supported transfer encoding.
