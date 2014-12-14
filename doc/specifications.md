@@ -39,38 +39,120 @@ From the transport's point of view message is a binary string.
 ## Message
 RPC is declared with standard Google Protobuf syntax
 
-    service Rpc {
-        rpc Call (Request) returns (Response);
+    service Service {
+        rpc Call1 (Request) returns (Response);
+        rpc Call2 (Request) returns (Response);
     }
 
 Each RPC has Request and Response messages.
 
-### File transfer
-For file transfer special system class is provided:
-`bunsan.rpc.FileHandle` which behaves as file handle.
-For each file to be sent user should allocate handle
-by library call specifying path to file.
-For each received file user can use this handle
-to get its path on filesystem.
+### Handles
+User defined messages can contain special handle objects
+defined in `bunsan.rpc.handle` package.
+Handle objects link data from different entry into message
+via special interface provided by RPC implementation.
+User can access this data via handle in a way most suitable for that.
 
-FileHandle is implementation-defined message,
-user should not rely on its contents.
+`handle` field of `bunsan.rpc.handle.Handle` type is implementation
+defined. Other fields can be used by user directly.
+These fields may be set by implementation at handle creation time,
+but later they remain unchanged. See documentation for specified
+handle for additional details.
+
+#### File handle
+`bunsan.rpc.handle.FileHandle` is used for file transmission.
+File is specified by filesystem path upon send
+and at the destination point is stored into file.
+User can access it via filesystem path.
+RAM usage for file transmission does not depend on file size.
+Implementation provides no guarantees regarding file location and name.
+
+## Remote call
+Service handles RPCs on specified URL, e.g. `http://example.com/service`.
+Method names is transmitted as part of request header.
+Service does not forward invalid RPCs to user's implementation.
+Transport error is reported by transport itself (e.g. HTTP404).
+Otherwise error is reported by RPC.
+
+### RPC errors
+RPC handles the following error conditions during request:
+* Unknown RPC &ndash; there is no remote procedure with specified name
+* Invalid request &ndash; unable to parse request
+
+Also remote procedure can fail, in that case:
+* Unhandled exception &ndash; remote procedure returned exception
 
 ## Transport
+
+### Request
+Only POST method is used for RPC.
+Other methods are never used by RPC
+and allowed to be used for extensions,
+such as HTML interface.
+
 ### Data format
-HTTP is used with special data format `multipart/bunsan-rpc`,
-which allows sending named blobs of known length.
-Using this data format proto messages as well as files
-can be sent over HTTP.
+HTTP is used with special data types `multipart/bunsan-rpc-request`
+and `multipart/bunsan-rpc-response` which allows sending
+named blobs of known length. Using this data format
+proto messages as well as files or other data can be sent over HTTP.
 
-`multipart/bunsan-rpc` is defined by EBNF
+`multipart/bunsan-rpc-request` is defined by EBNF
 
-    bunsan-rpc = { entry };
-    entry = id, separator, size, separator, data, separator;
-    id = base64 encoded data; (* it is assumed to be reasonably small *)
+    bunsan-rpc-request = request header, separator, { entry };
+    request header = base64 encoded bunsan.rpc.header.RequestHeader;
+
+`multipart/bunsan-rpc-response` is defined by EBNF
+
+    bunsan-rpc-response = response header, separator, { entry };
+    response header = base64 encoded bunsan.rpc.header.ResponseHeader;
+
+Common EBNF
+
+    entry = entry header, separator, data, separator;
+    entry header = base64 encoded bunsan.rpc.header.EntryHeader;
     separator = CRLF;
-    size = HEX number of bytes;
     data = raw data of specified size;
 
 ### Transfer encoding
 Implementation is allowed to use any wide-supported transfer encoding.
+
+# Examples
+
+## Example 1
+
+### Declarations
+
+    message MyRequest {
+        required string question = 1;
+        required bunsan.rpc.handle.FileHandle file = 2;
+    }
+    message MyResponse {
+        required string answer = 1;
+        required bunsan.rpc.handle.FileHandle file = 2;
+    }
+    rpc MyService {
+        rpc MyQuestion (MyRequest) returns (MyResponse);
+    }
+
+### Client
+
+    channel = bunsan.rpc.http.NewChannel("http://host:port/script")
+    stub = MyService(channel)
+    file = stub.register(bunsan.rpc.FileHandle, path="/my/file")
+    file.name = "picture.png"
+    request = MyRequest(question="What is displayed here?", file=file)
+    response = stub.MyQuestion(request)
+    print(response.answer)
+    received_file = response.file
+    print("Name =", received_file.name)
+    print("mime-type =", received_file.mime_type)
+    print("Location =", stub.handle_file(received_file))
+
+### Server
+
+    class Rpc(RpcStub):
+        def MyQuestion(request):
+            print(request.question)
+            path = self.handle_file(response.file)
+            file = self.register(bunsan.rpc.FileHandle, path)
+            return MyResponse(answer="I don't know.", file=file)
