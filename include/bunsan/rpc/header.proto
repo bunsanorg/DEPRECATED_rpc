@@ -4,7 +4,7 @@ import "bunsan/rpc/handle.proto";
 
 message RequestHeader {
     required string rpc = 1;
-    required bunsan.rpc.handle.Handle message = 2;
+    required handle.Handle message = 2;
 }
 
 message ResponseStatus {
@@ -20,7 +20,7 @@ message ResponseStatus {
 
 message ResponseHeader {
     required ResponseStatus status = 1;
-    optional bunsan.rpc.handle.Handle message = 2;
+    optional handle.Handle message = 2;
 }
 
 message EntryHeader {
