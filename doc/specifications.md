@@ -53,11 +53,11 @@ Handle objects link data from different entry into message
 via special interface provided by RPC implementation.
 User can access this data via handle in a way most suitable for that.
 
-`handle` field of `bunsan.rpc.handle.Handle` type is implementation
-defined. Other fields can be used by user directly.
-These fields may be set by implementation at handle creation time,
-but later they remain unchanged. See documentation for specified
-handle for additional details.
+`bunsan.rpc.handle.Handle` is implementation defined. For each handled type
+separate class is provided, such as `FileHandle`. In these classes all fields
+except `handle` are considered public. These fields may be set by implementation
+at handle creation time, but later they remain unchanged.
+See documentation for specified handle for additional details.
 
 #### File handle
 `bunsan.rpc.handle.FileHandle` is used for file transmission.
