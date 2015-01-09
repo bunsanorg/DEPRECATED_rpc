@@ -23,7 +23,7 @@ Disadvantages:
 Google Protocol Buffers are used for structured data handling.
 
 Advantages:
-* strict static type system, less bug-prone then JSON or XML
+* strict static type system, less bug-prone than JSON or XML
 * standard syntax for RPC service declaration
 * fast
 * cross-platform and cross-language support
