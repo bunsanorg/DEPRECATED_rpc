@@ -130,7 +130,8 @@ Implementation is allowed to use any wide-supported transfer encoding.
     }
     message MyResponse {
         required string answer = 1;
-        required bunsan.rpc.handle.FileHandle file = 2;
+        required bunsan.rpc.handle.FileHandle file1 = 2;
+        required bunsan.rpc.handle.FileHandle file2 = 3;
     }
     rpc MyService {
         rpc MyQuestion (MyRequest) returns (MyResponse);
@@ -145,16 +146,20 @@ Implementation is allowed to use any wide-supported transfer encoding.
     request = MyRequest(question="What is displayed here?", file=file)
     response = stub.MyQuestion(request)
     print(response.answer)
-    received_file = response.file
-    print("Name =", received_file.name)
-    print("mime-type =", received_file.mime_type)
-    print("Location =", stub.handle_file(received_file))
+    received_file1 = response.file1
+    received_file2 = response.file2
+    for i in [received_file1, received_file2]:
+      print("Name =", i.name)
+      print("mime-type =", i.mime_type)
+      print("Location =", stub.handle_file(i))
 
 ### Server
 
     class Rpc(RpcStub):
         def MyQuestion(request):
             print(request.question)
-            path = self.handle_file(response.file)
-            file = self.register(bunsan.rpc.FileHandle, path)
-            return MyResponse(answer="I don't know.", file=file)
+            path1 = self.handle_file(response.file)
+            file1 = self.register(bunsan.rpc.FileHandle, path1)
+            path2 = transform(path1)
+            file2 = self.register(bunsan.rpc.FileHandle, path2)
+            return MyResponse(answer="I don't know.", file1=file1, file2=file2)
