@@ -2,24 +2,20 @@ project(bunsan_rpc)
 
 include(${CMAKE_SOURCE_DIR}/system-config.cmake OPTIONAL)
 
-cmake_minimum_required(VERSION 2.8)
+cmake_minimum_required(VERSION 3.0)
 
-include(BunsanCommon)
+find_package(BunsanCMake CONFIG REQUIRED)
 
-bunsan_use_bunsan(common)
-bunsan_use_boost(system filesystem thread)
-bunsan_use_protobuf()
-
-bunsan_protobuf_generate_cpp(SOURCES proto_srcs HEADERS proto_hdrs INSTALL include PROTOS
-    bunsan/rpc/handle.proto
-    bunsan/rpc/header.proto
-)
+bunsan_install_module(NAME BunsanRpc
+                      DIRECTORIES scripts/)
 
 bunsan_add_shared_library(${PROJECT_NAME}
-    ${proto_srcs}
+    src/lib/empty.cpp
 )
+bunsan_use_bunsan_package(${PROJECT_NAME} bunsan_common bunsan_common)
 
 bunsan_install_headers()
 bunsan_install_targets(${PROJECT_NAME})
+bunsan_install_project()
 
 bunsan_include_tests()
