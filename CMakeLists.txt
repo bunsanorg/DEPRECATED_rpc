@@ -10,7 +10,7 @@ bunsan_install_module(NAME BunsanRpc
                       DIRECTORIES scripts/)
 
 bunsan_add_shared_library(${PROJECT_NAME}
-    src/lib/empty.cpp
+    src/lib/global_state.cpp
 )
 bunsan_use_bunsan_package(${PROJECT_NAME} bunsan_common bunsan_common)
 
