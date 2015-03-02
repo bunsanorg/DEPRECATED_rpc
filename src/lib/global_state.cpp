@@ -41,12 +41,14 @@ namespace bunsan{namespace rpc
 
     global_state::global_state()
     {
+        BUNSAN_LOG_DEBUG << "Initializing gRPC";
         grpc_init();
         gpr_set_log_function(&log_callback);
     }
 
     global_state::~global_state()
     {
+        BUNSAN_LOG_DEBUG << "Shutting down gRPC";
         grpc_shutdown();
     }
 
