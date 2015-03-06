@@ -2,6 +2,7 @@
 
 #include <bunsan/application/global_registry.hpp>
 #include <bunsan/logging/trivial.hpp>
+#include <bunsan/static_initializer.hpp>
 
 #include <grpc/grpc.h>
 #include <grpc/support/log.h>
@@ -52,6 +53,8 @@ namespace bunsan{namespace rpc
         grpc_shutdown();
     }
 
-    const bool global_state::registered =
+    BUNSAN_STATIC_INITIALIZER(bunsan_rpc_global_state,
+    {
         application::global_registry::register_unique_state_factory<global_state>();
+    })
 }}
